@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native builds
+ios/build/
+ios/Pods/
+ios/build 2/
+ios/Pods 2/
+
+# Environment variables — credentials burada, asla commit'leme
+.env
+.env.local
+.env.*.local
+
+# Xcode
+*.xcworkspace
+!default.xcworkspace
+ios/DerivedData/
+ios/**/*.xcuserstate
+ios/**/*.xcscheme
+*.xccheckout
+*.moved-aside
+
+# Simulator screenshots
+simulator_screenshot_*.png
+Ekran\ Resmi\ *.png
+
+# Duplicate files (accidental copies)
+*\ 2
+*\ 2.*
+*\ 2/
+
+# Internal planning docs
+docs/superpowers/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Jest
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Metro
+.metro-health-check*

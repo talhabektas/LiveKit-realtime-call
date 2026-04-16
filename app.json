@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "VoIP Demo",
+    "slug": "voip-demo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["ios"],
+    "ios": {
+      "bundleIdentifier": "com.voipdemo.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Sesli arama için mikrofon gerekiyor."
+      },
+      "backgroundModes": ["audio"]
+    },
+    "plugins": [
+      "expo-dev-client",
+      [
+        "@livekit/react-native-expo-plugin",
+        {
+          "cameraPermission": false,
+          "microphonePermission": "Sesli arama için mikrofon gerekiyor."
+        }
+      ]
+    ]
+  }
+}
