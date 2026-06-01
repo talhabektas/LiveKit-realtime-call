@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "platforms": ["ios"],
     "ios": {
-      "bundleIdentifier": "com.voipdemo.app",
+      "bundleIdentifier": "com.talhabektas.voipdemo",
       "supportsTablet": false,
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Sesli arama için mikrofon gerekiyor."

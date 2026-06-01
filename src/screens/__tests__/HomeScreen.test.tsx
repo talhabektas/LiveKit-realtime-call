@@ -2,9 +2,10 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { HomeScreen } from '../HomeScreen';
 
-// tokenGenerator mock'la — bu testte JWT üretimini test etmiyoruz
-jest.mock('../../utils/tokenGenerator', () => ({
-  generateToken: jest.fn(() => 'mock-jwt-token'),
+// decodeToken'ı mock'la — burada JWT çözümlemeyi değil, ekran davranışını test ediyoruz.
+jest.mock('../../utils/tokenInfo', () => ({
+  decodeToken: jest.fn(() => ({ room: 'incident-test', identity: 'talha' })),
+  sanitizeToken: jest.fn((s: string) => s.trim()),
 }));
 
 const mockNavigate = jest.fn();
@@ -18,30 +19,29 @@ describe('HomeScreen', () => {
     mockNavigate.mockClear();
   });
 
-  it('oda adı ve kullanıcı adı inputları render edilir', () => {
+  it('token yapıştırma alanı render edilir', () => {
     const { getByPlaceholderText } = render(<HomeScreen />);
-    expect(getByPlaceholderText('Oda adı')).toBeTruthy();
-    expect(getByPlaceholderText('Kullanıcı adı')).toBeTruthy();
+    expect(getByPlaceholderText(/token'ını buraya yapıştır/i)).toBeTruthy();
   });
 
-  it('"Odaya Katıl" butonu başta disabled — boşken navigate etmez', () => {
+  it('"Odaya Katıl" butonu token boşken navigate etmez', () => {
     const { getByText } = render(<HomeScreen />);
-    expect(getByText('Odaya Katıl')).toBeTruthy();
-    // Alanlar boşken tıklama navigate'i tetiklememeli
     fireEvent.press(getByText('Odaya Katıl'));
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('iki alan dolu olunca buton aktif olur ve Room ekranına navigate eder', async () => {
+  it('token yapıştırılınca decode edilip Room ekranına yönlendirir', async () => {
     const { getByPlaceholderText, getByText } = render(<HomeScreen />);
-    fireEvent.changeText(getByPlaceholderText('Oda adı'), 'test-room');
-    fireEvent.changeText(getByPlaceholderText('Kullanıcı adı'), 'alice');
+    fireEvent.changeText(
+      getByPlaceholderText(/token'ını buraya yapıştır/i),
+      'header.payload.signature',
+    );
     fireEvent.press(getByText('Odaya Katıl'));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('Room', {
-        roomName: 'test-room',
-        participantName: 'alice',
-        token: 'mock-jwt-token',
+        roomName: 'incident-test',
+        participantName: 'talha',
+        token: 'header.payload.signature',
       });
     });
   });
