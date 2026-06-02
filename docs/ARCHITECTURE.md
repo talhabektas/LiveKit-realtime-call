@@ -62,10 +62,10 @@ mobileappitoc/
 │   └── Podfile.properties.json # JS engine seçimi (hermes)
 └── src/
     ├── screens/
-    │   ├── HomeScreen.tsx       # Oda adı + kullanıcı adı giriş ekranı
+    │   ├── HomeScreen.tsx       # Hazır token yapıştırma + katılım ekranı
     │   └── RoomScreen.tsx       # Aktif arama ekranı
     ├── utils/
-    │   └── tokenGenerator.ts   # JWT token üretici (SADECE DEMO — prod'da backend'e taşı)
+    │   └── tokenInfo.ts        # Yapıştırılan token'ı OKUR (room/identity ayıklar) — imzalamaz
     └── types/
         └── navigation.ts        # TypeScript navigation tipleri
 ```
@@ -74,15 +74,18 @@ mobileappitoc/
 
 ## Nasıl Çalışır?
 
-### 1. Token Üretimi
+### 1. Token (uygulama DIŞINDA üretilir)
 LiveKit'e bağlanmak için JWT token gerekir. Token şu bilgileri içerir:
-- Kim bağlanıyor (`sub`: kullanıcı adı)
+- Kim bağlanıyor (`sub`: identity)
 - Hangi odaya (`video.room`)
 - Ne yapabilir (`canPublish`, `canSubscribe`)
 - Ne zaman expire olacak (`exp`)
 - Kim imzaladı (`iss`: API key)
 
-Token, API secret ile HMAC-SHA256 algoritması kullanılarak imzalanır.
+Token, API secret ile HMAC-SHA256 kullanılarak imzalanır — **ama bu imzalama bu
+uygulamada YAPILMAZ.** API secret asla bundle'a girmez. Token dışarıda üretilir
+(LiveKit Cloud dashboard veya `lk token create ...`) ve uygulamaya yapıştırılır.
+Uygulama token'ı yalnızca okur (`tokenInfo.ts` → room + identity ayıklar).
 
 ```
 Header.Payload.Signature  →  eyJhbGci...
@@ -91,9 +94,11 @@ Header.Payload.Signature  →  eyJhbGci...
 ### 2. Bağlantı Akışı
 
 ```
-Kullanıcı "Odaya Katıl" basar
+Token dışarıda üretilir (LiveKit Cloud / lk CLI)
     ↓
-tokenGenerator.ts → JWT üretir (API key + secret ile imzalanır)
+Kullanıcı token'ı HomeScreen'e yapıştırır → "Odaya Katıl" basar
+    ↓
+tokenInfo.ts → token'dan room + identity okur (imzalamaz)
     ↓
 RoomScreen açılır
     ↓
@@ -146,7 +151,7 @@ Bunlar demo'yu basit tutmak için kasıtlı olarak yapılmadı. Prod'da hepsi ol
 
 | Eksik | Risk | Prod Çözümü |
 |-------|------|-------------|
-| Token client'ta üretiliyor | API secret bundle'a gömülü, herkes görebilir | Backend endpoint'i |
+| Token elle yapıştırılıyor | Üretim/dağıtım manuel; kimlik doğrulama yok | Backend token endpoint'i (Supabase Edge Function) |
 | Gelen arama bildirimi yok | Kullanıcı aramadan haberdar olamaz | PushKit + APNs |
 | Kullanıcı kimlik doğrulaması yok | Herkes herhangi bir odaya girebilir | JWT auth middleware |
 | Oda yönetimi yok | Oda oluşturma/silme kontrolsüz | LiveKit Server API |
@@ -433,8 +438,10 @@ await provider.send(notification, deviceToken)
 | `expo-dev-client` | `~5.2.4` | Custom dev build |
 | `react-native-screens` | `~4.11.1` | Native ekran yönetimi |
 | `react-native-safe-area-context` | `5.4.0` | Safe area |
-| `crypto-js` | `^4.2.0` | JWT imzalama (SADECE DEMO) |
 | `typescript` | `~5.8.3` | TypeScript |
+
+> Not: `crypto-js` kaldırıldı — uygulama artık token imzalamıyor, sadece dışarıda
+> üretilmiş token'ı okuyor. API secret bundle'da yok.
 
 ### Prod'da Eklenecekler (Mobil)
 

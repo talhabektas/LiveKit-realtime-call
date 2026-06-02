@@ -4,7 +4,7 @@ A demo project showcasing how in-app voice calling works on iOS, built with [Liv
 
 ## What is this?
 
-This project was built to explore the technical foundation of adding voice calling to a mobile application. Users can join a voice call by entering a room name and a username. Multiple participants can connect to the same room simultaneously.
+This project was built to explore the technical foundation of adding voice calling to a mobile application. Users join a voice call by pasting a pre-generated LiveKit access token (which already encodes the room name and identity). Multiple participants can connect to the same room simultaneously.
 
 ## Features
 
@@ -26,15 +26,19 @@ This project was built to explore the technical foundation of adding voice calli
 npm install --legacy-peer-deps
 ```
 
-Create a `.env` file:
+Create a `.env` file (see `.env.example`):
 
 ```env
 EXPO_PUBLIC_LIVEKIT_URL=wss://your-project.livekit.cloud
-EXPO_PUBLIC_LIVEKIT_API_KEY=your-api-key
-EXPO_PUBLIC_LIVEKIT_API_SECRET=your-api-secret
+# Optional: a default token to pre-fill the join screen. Leave empty to paste manually.
+EXPO_PUBLIC_LIVEKIT_TOKEN=
 ```
 
-Get your LiveKit credentials at [livekit.io](https://livekit.io).
+> ⚠️ This app does **not** mint tokens, and the LiveKit **API secret never lives in
+> the app bundle**. Generate short-lived access tokens externally — via the
+> [LiveKit Cloud](https://livekit.io) dashboard or the LiveKit CLI
+> (`lk token create ...`) — then paste them into the Home screen. Use a different
+> token (different identity) for each device joining the same room.
 
 ## Running
 
@@ -44,10 +48,10 @@ npx expo run:ios
 
 ## Screens
 
-**Home Screen** — Enter a room name and username to join a call.
+**Home Screen** — Paste a LiveKit access token and join. The room and identity are read from the token.
 
 **Room Screen** — View connected participants and control your microphone.
 
 ## Note
 
-This is a demo project. JWT tokens are generated on the client side for simplicity — in a production environment, tokens should be issued by a backend server.
+This is a demo/PoC. Tokens are minted **outside** the app (LiveKit Cloud dashboard or `lk token create`) and consumed here — the API secret is never bundled. In production, tokens will be issued by a backend (e.g. a Supabase Edge Function) after authenticating the user and authorizing room access.
